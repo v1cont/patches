@@ -1,0 +1,35 @@
+--- mc-4.8.26/misc/mc.default.keymap.orig	2021-01-10 13:50:16.000000000 +0200
++++ mc-4.8.26/misc/mc.default.keymap	2021-04-20 12:34:45.889025111 +0300
+@@ -12,7 +12,9 @@
+ Delete = f8
+ Menu = f9
+ Quit = f10
+-MenuLastSelected = f19
++SelectMntLeft = f11
++SelectMntRight = f12
++# MenuLastSelected =
+ QuitQuiet = f20
+ Find = alt-question
+ CdQuick = alt-c
+@@ -46,7 +48,7 @@
+ # OptionsDisplayBits =
+ # OptionsVfs =
+ # LearnKeys =
+-# SaveSetup =
++SaveSetup = f19
+ # EditExtensionsFile =
+ # EditFileHighlightFile =
+ # Filter =
+@@ -124,10 +126,10 @@
+ # SortPrev =
+ # SortNext =
+ # SortReverse =
+-# SortByName =
++SortByName = alt-n
+ # SortByExt =
+ # SortBySize =
+-# SortByMTime =
++SortByMTime = alt-m
+ # ScrollLeft =
+ # ScrollRight =
+ 

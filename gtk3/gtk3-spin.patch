@@ -1,0 +1,20 @@
+--- gtk3-3.24.1/gtk/gtkspinbutton.c.orig	2018-10-15 11:12:12.332692093 +0300
++++ gtk3-3.24.1/gtk/gtkspinbutton.c	2018-10-15 11:13:12.735691834 +0300
+@@ -812,7 +812,7 @@
+   priv->down_button = gtk_icon_helper_new_named ("button",
+                                                  GTK_WIDGET (spin_button));
+   _gtk_icon_helper_set_use_fallback (GTK_ICON_HELPER (priv->down_button), TRUE);
+-  _gtk_icon_helper_set_icon_name (GTK_ICON_HELPER (priv->down_button), "list-remove-symbolic", GTK_ICON_SIZE_MENU);
++  _gtk_icon_helper_set_icon_name (GTK_ICON_HELPER (priv->down_button), "pan-down-symbolic", GTK_ICON_SIZE_MENU);
+   gtk_css_gadget_add_class (priv->down_button, "down");
+   gtk_css_node_set_parent (gtk_css_gadget_get_node (priv->down_button), widget_node);
+   gtk_css_node_set_state (gtk_css_gadget_get_node (priv->down_button), gtk_css_node_get_state (widget_node));
+@@ -823,7 +823,7 @@
+   priv->up_button = gtk_icon_helper_new_named ("button",
+                                                GTK_WIDGET (spin_button));
+   _gtk_icon_helper_set_use_fallback (GTK_ICON_HELPER (priv->up_button), TRUE);
+-  _gtk_icon_helper_set_icon_name (GTK_ICON_HELPER (priv->up_button), "list-add-symbolic", GTK_ICON_SIZE_MENU);
++  _gtk_icon_helper_set_icon_name (GTK_ICON_HELPER (priv->up_button), "pan-up-symbolic", GTK_ICON_SIZE_MENU);
+   gtk_css_gadget_add_class (priv->up_button, "up");
+   gtk_css_node_set_parent (gtk_css_gadget_get_node (priv->up_button), widget_node);
+   gtk_css_node_set_state (gtk_css_gadget_get_node (priv->up_button), gtk_css_node_get_state (widget_node));
