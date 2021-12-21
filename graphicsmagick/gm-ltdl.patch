@@ -1,0 +1,375 @@
+diff -urNp GraphicsMagick-1.3.37-orig/configure.ac GraphicsMagick-1.3.37/configure.ac
+--- GraphicsMagick-1.3.37-orig/configure.ac	2021-12-12 23:07:42.000000000 +0200
++++ GraphicsMagick-1.3.37/configure.ac	2021-12-13 11:49:32.863080696 +0200
+@@ -1623,45 +1623,45 @@ AC_SUBST([LIB_TRIO])
+ 
+ 
+ #
+-# Optionally check for libltdl if using it is still enabled
++# Optionally check for libdl if using it is still enabled
+ #
+-# Only use/depend on libtdl if we are building modules.  This is a
++# Only use/depend on libdl if we are building modules.  This is a
+ # change from previous releases (prior to 1.3.17) which supported
+-# loaded modules via libtdl if shared libraries were built.  of
++# loaded modules via libdl if shared libraries were built.  of
+ # whether modules are built or not.
+-have_ltdl='no'
+-LIB_LTDL=''
++have_dl='no'
++LIB_DL=''
+ if test "$build_modules" != 'no'
+ then
+-  AC_MSG_CHECKING([for libltdl ])
++  AC_MSG_CHECKING([for libdl ])
+   AC_MSG_RESULT()
+   failed=0
+   passed=0
+-  AC_CHECK_HEADER([ltdl.h],[passed=`expr $passed + 1`],[failed=`expr $failed + 1`])
+-  AC_CHECK_LIB([ltdl],[lt_dlinit],[passed=`expr $passed + 1`],[failed=`expr $failed + 1`],)
+-  AC_MSG_CHECKING([if libltdl package is complete])
++  AC_CHECK_HEADER([dlfcn.h],[passed=`expr $passed + 1`],[failed=`expr $failed + 1`])
++  AC_CHECK_LIB([dl],[dlopen],[passed=`expr $passed + 1`],[failed=`expr $failed + 1`],)
++  AC_MSG_CHECKING([if libdl package is complete])
+   if test $passed -gt 0
+   then
+     if test $failed -gt 0
+     then
+       AC_MSG_RESULT([no -- some components failed test])
+-      have_ltdl='no (failed tests)'
++      have_dl='no (failed tests)'
+     else
+-      LIB_LTDL='-lltdl'
+-      LIBS="$LIB_LTDL $LIBS"
+-      AC_DEFINE([HasLTDL],[1],[Define if using libltdl to support dynamically loadable modules])
++      LIB_DL='-ldl'
++      LIBS="$LIB_DL $LIBS"
++      AC_DEFINE([HasDL],[1],[Define if using libdl to support dynamically loadable modules])
+       AC_MSG_RESULT([yes])
+-      have_ltdl='yes'
++      have_dl='yes'
+     fi
+   else
+     AC_MSG_RESULT([no])
+   fi
+-  if test "$have_ltdl" != 'yes'
++  if test "$have_dl" != 'yes'
+   then
+-    AC_MSG_FAILURE([libltdl is required by modules build],[1])
++    AC_MSG_FAILURE([libdl is required by modules build],[1])
+   fi
+ fi
+-AM_CONDITIONAL([WITH_LTDL],[test "$have_ltdl" != 'no'])
++AM_CONDITIONAL([WITH_DL],[test "$have_dl" != 'no'])
+ 
+ #
+ # Check for ZLIB
+@@ -3687,12 +3687,12 @@ fi
+ #
+ 
+ # The build_modules variable is set to 'yes' if coders and filters are
+-# to be built as modules.  This requires libltdl ($LIB_LTDL).
++# to be built as modules.  This requires libdl ($LIB_DL).
+ # Removed $LIB_OMP and $LIB_THREAD
+ 
+ if test "$build_modules" != 'no'
+ then
+-  MAGICK_DEP_LIBS="$LIBS_USER $LIB_LCMS $LIB_TTF $LIB_GS $LIB_XEXT $LIB_IPC $LIB_X11 $LIB_BZLIB $LIB_ZLIB $LIB_LTDL $LIB_TRIO $LIB_GDI32 $LIB_MATH $LIB_THREAD $LIB_TCMALLOC $LIB_UMEM $LIB_MTMALLOC"
++  MAGICK_DEP_LIBS="$LIBS_USER $LIB_LCMS $LIB_TTF $LIB_GS $LIB_XEXT $LIB_IPC $LIB_X11 $LIB_BZLIB $LIB_ZLIB $LIB_DL $LIB_TRIO $LIB_GDI32 $LIB_MATH $LIB_THREAD $LIB_TCMALLOC $LIB_UMEM $LIB_MTMALLOC"
+ else
+   MAGICK_DEP_LIBS="$LIBS_USER $LIB_JBIG $LIB_WEBP $LIB_LCMS $LIB_TIFF $LIB_TTF $LIB_JP2 $LIB_JPEG $LIB_GS $LIB_PNG $LIB_FPX $LIB_WMF $LIB_DPS $LIB_XEXT $LIB_IPC $LIB_X11 $LIB_LZMA $LIB_BZLIB $LIB_XML $LIB_ZLIB $LIB_ZSTD $LIB_TRIO $LIB_GDI32 $LIB_MATH $LIB_THREAD $LIB_TCMALLOC $LIB_UMEM $LIB_MTMALLOC"
+ fi
+diff -urNp GraphicsMagick-1.3.37-orig/magick/magick_config.h.in GraphicsMagick-1.3.37/magick/magick_config.h.in
+--- GraphicsMagick-1.3.37-orig/magick/magick_config.h.in	2021-12-12 23:14:57.000000000 +0200
++++ GraphicsMagick-1.3.37/magick/magick_config.h.in	2021-12-13 11:48:05.902230760 +0200
+@@ -439,7 +439,7 @@
+ #undef HasLCMS
+ 
+ /* Define if using libltdl to support dynamically loadable modules */
+-#undef HasLTDL
++#undef HasDL
+ 
+ /* Define if you have lzma compression library */
+ #undef HasLZMA
+diff -urNp GraphicsMagick-1.3.37-orig/magick/module.c GraphicsMagick-1.3.37/magick/module.c
+--- GraphicsMagick-1.3.37-orig/magick/module.c	2021-12-12 23:07:42.000000000 +0200
++++ GraphicsMagick-1.3.37/magick/module.c	2021-12-13 11:48:05.903230746 +0200
+@@ -47,20 +47,18 @@
+ #include "magick/map.h"
+ #include "magick/module.h"
+ #include "magick/utility.h"
+-#if defined(HasLTDL)
+-#  include "ltdl.h"
+-   typedef lt_dlhandle ModuleHandle;
+-#else
+-   typedef void *ModuleHandle;
++#if defined(HasDL)
++#  include <dlfcn.h>
+ #endif
++typedef void *ModuleHandle;
+ 
+ /*
+   Define declarations.
+ */
+ #define MAX_MODULES 511 /* Maximum number of modules supported by build. */
+ #define ModuleFilename  "modules.mgk"
+-#if defined(HasLTDL)
+-#  define ModuleGlobExpression "*.la"
++#if defined(HasDL)
++#  define ModuleGlobExpression "*.so"
+ #else
+ #  if defined(_DEBUG)
+ #    define ModuleGlobExpression "IM_MOD_DB_*.dll"
+@@ -140,11 +138,6 @@ static MagickMap
+ static MagickMap
+   filter_path_map = (MagickMap) NULL;
+ 
+-/*
+-  Set to True if libltdl has been initialized.
+-*/
+-static unsigned int
+-  ltdl_initialized=False;
+ 
+ /*
+   Forward declarations.
+@@ -290,18 +283,6 @@ DestroyModuleInfo(void)
+     DestroyModuleInfoEntry(module_info);
+   }
+   module_list=(ModuleInfo *) NULL;
+-  /*
+-    Destroy the libltdl environment unless Jasper is used since Jasper
+-    sometimes registers an atexit() handler to destroy itself and this
+-    causes a crash if the Jasper library is already unloaded.
+-  */
+-  if (ltdl_initialized)
+-    {
+-#if !defined(HasJP2)
+-      (void) lt_dlexit();
+-#endif
+-      ltdl_initialized=False;
+-    }
+ }
+ 
+ /*
+@@ -375,13 +356,13 @@ ExecuteModuleProcess(const char *tag,Ima
+       return(MagickFail);
+ 
+     /* Open the module */
+-    handle=lt_dlopen(module_path);
++    handle=dlopen(module_path, RTLD_LAZY);
+     if (handle == (ModuleHandle) NULL)
+       {
+         char
+           message[MaxTextExtent];
+ 
+-        FormatString(message,"\"%.256s: %.256s\"",module_path,lt_dlerror());
++        FormatString(message,"\"%.256s: %.256s\"",module_path,dlerror());
+         ThrowException(&(*image)->exception,ModuleError,UnableToLoadModule,
+           message);
+         return(status);
+@@ -401,7 +382,7 @@ ExecuteModuleProcess(const char *tag,Ima
+     FormatString(method_name,"%.64sImage",tag);
+ #endif
+     method=(unsigned int (*)(Image **,const int,char **))
+-      lt_dlsym(handle,method_name);
++      dlsym(handle,method_name);
+ 
+ 
+     /* Execute module method */
+@@ -429,7 +410,7 @@ ExecuteModuleProcess(const char *tag,Ima
+ 
+   }
+   /* Close the module */
+-  (void) lt_dlclose(handle);
++  dlclose(handle);
+   return(status);
+ }
+ 
+@@ -820,13 +801,6 @@ InitializeMagickModules(void)
+       /*
+         Read module aliases file.
+       */
+-      if (!ltdl_initialized)
+-        {
+-          if (lt_dlinit() != 0)
+-            MagickFatalError(ModuleFatalError,
+-              UnableToInitializeModuleLoader,lt_dlerror());
+-          ltdl_initialized=True;
+-        }
+       (void) ReadModuleConfigureFile(ModuleFilename,0,&exception);
+     }
+   (void) InitializeModuleSearchPath(MagickCoderModule,&exception);
+@@ -1419,10 +1393,10 @@ OpenModule(const char *module,ExceptionI
+     (void) LogMagickEvent(ConfigureEvent,GetMagickModule(),
+       "Opening module at path \"%s\" ...", path);
+ 
+-    handle=lt_dlopen(path);
++    handle=dlopen(path, RTLD_LAZY|RTLD_NOW);
+     if (handle == (ModuleHandle) NULL)
+       {
+-        FormatString(message,"\"%.1024s: %.1024s\"",path,lt_dlerror());
++        FormatString(message,"\"%.1024s: %.1024s\"",path,dlerror());
+         ThrowException(exception,ModuleError,UnableToLoadModule,message);
+         return(MagickFail);
+       }
+@@ -1432,7 +1406,7 @@ OpenModule(const char *module,ExceptionI
+     coder_info=SetCoderInfo(module_name);
+     if (coder_info == (CoderInfo*) NULL)
+       {
+-        (void) lt_dlclose(handle);
++        (void) dlclose(handle);
+         return(MagickFail);
+       }
+     coder_info->handle=handle;
+@@ -1443,10 +1417,10 @@ OpenModule(const char *module,ExceptionI
+       Locate and record RegisterFORMATImage function
+     */
+     TagToFunctionName(module_name,"Register%sImage",name);
+-    coder_info->register_function=(void (*)(void)) lt_dlsym(handle,name);
++    coder_info->register_function=(void (*)(void)) dlsym(handle,name);
+     if (coder_info->register_function == (void (*)(void)) NULL)
+       {
+-        FormatString(message,"\"%.1024s: %.1024s\"",module_name,lt_dlerror());
++        FormatString(message,"\"%.1024s: %.1024s\"",module_name,dlerror());
+         ThrowException(exception,ModuleError,UnableToRegisterImageFormat,
+           message);
+         return(MagickFail);
+@@ -1460,10 +1434,10 @@ OpenModule(const char *module,ExceptionI
+       Locate and record UnregisterFORMATImage function
+     */
+     TagToFunctionName(module_name,"Unregister%sImage",name);
+-    coder_info->unregister_function=(void (*)(void)) lt_dlsym(handle,name);
++    coder_info->unregister_function=(void (*)(void)) dlsym(handle,name);
+     if (coder_info->unregister_function == (void (*)(void)) NULL)
+       {
+-        FormatString(message,"\"%.1024s: %.1024s\"",module_name,lt_dlerror());
++        FormatString(message,"\"%.1024s: %.1024s\"",module_name,dlerror());
+         ThrowException(exception,ModuleError,UnableToRegisterImageFormat,
+           message);
+         return(MagickFail);
+@@ -1982,8 +1956,8 @@ TagToCoderModuleName(const char *tag,cha
+ {
+   assert(tag != (char *) NULL);
+   assert(module_name != (char *) NULL);
+-#if defined(HasLTDL)
+-  (void) FormatString(module_name,"%.1024s.la",tag);
++#if defined(HasDL)
++  (void) FormatString(module_name,"%.1024s.so",tag);
+   (void) LocaleLower(module_name);
+ #else
+ #if defined(MSWINDOWS)
+@@ -1998,7 +1972,7 @@ TagToCoderModuleName(const char *tag,cha
+ #  endif /* defined(_DEBUG) */
+     }
+ #endif  /* defined(MSWINDOWS) */
+-#endif /* defined(HasLTDL) */
++#endif /* defined(HasDL) */
+ }
+ 
+ /*
+@@ -2029,8 +2003,8 @@ TagToFilterModuleName(const char *tag, c
+ {
+   assert(tag != (char *) NULL);
+   assert(module_name != (char *) NULL);
+-#if defined(HasLTDL)
+-  (void) FormatString(module_name,"%.1024s.la",tag);
++#if defined(HasDL)
++  (void) FormatString(module_name,"%.1024s.so",tag);
+   (void) LocaleLower(module_name);
+ #else
+   (void) FormatString(module_name,"%.1024s.dll",tag);
+@@ -2051,7 +2025,7 @@ TagToFilterModuleName(const char *tag, c
+ %  TagToFunctionName() formats the module tag name to a string using the
+ %  upper-case tag name as the input string, and a user-provided format.
+ %  This function is used to prepare the RegisterTAGImage and UnregisterTAGImage
+-%  function names passed lt_dlsym.
++%  function names passed dlsym.
+ %
+ %  The format of the TagToFunctionName method is:
+ %
+@@ -2142,10 +2116,9 @@ UnloadModule(const CoderInfo *coder_info
+   */
+   if ( strcmp("JP2",coder_info->tag) != 0 )
+     {
+-      if (lt_dlclose((ModuleHandle) coder_info->handle))
++      if (dlclose((ModuleHandle) coder_info->handle))
+         {
+-          FormatString(message,"\"%.1024s: %.1024s\"",coder_info->tag,
+-                       lt_dlerror());
++          FormatString(message,"\"%.1024s: %.1024s\"",coder_info->tag,dlerror());
+           ThrowException(exception,ModuleError,FailedToCloseModule,message);
+           status=False;
+         }
+diff -urNp GraphicsMagick-1.3.37-orig/magick/nt_base.c GraphicsMagick-1.3.37/magick/nt_base.c
+--- GraphicsMagick-1.3.37-orig/magick/nt_base.c	2021-12-12 23:07:42.000000000 +0200
++++ GraphicsMagick-1.3.37/magick/nt_base.c	2021-12-13 11:48:05.903230746 +0200
+@@ -42,15 +42,15 @@
+ #include "magick/magick.h"
+ #include "magick/utility.h"
+ #include "magick/version.h"
+-#if defined(HasLTDL)
+-#  include "ltdl.h"
++#if defined(HasDL)
++#  include "dlfcn.h"
+ #endif /* defined(HasLTDL) */
+ #include "magick/nt_base.h"
+ 
+ /*
+   Static declarations.
+ */
+-#if !defined(HasLTDL)
++#if !defined(HasDL)
+ static char
+   *NTslsearchpath = (char *) NULL;
+ #endif
+@@ -656,7 +656,7 @@ NTInitializeExceptionHandlers()
+   (void) SetUnhandledExceptionFilter(MagickUnhandledExceptionFilter);
+ }
+ 
+-#if !defined(HasLTDL)
++#if !defined(HasDL)
+ /*
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %                                                                             %
+@@ -929,7 +929,7 @@ MagickExport void *NTdlsym(void *handle,
+     return (void *) NULL;
+   return func;
+ }
+-#endif /* !defined(HasLTDL) */
++#endif /* !defined(HasDL) */
+ 
+ /*
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+diff -urNp GraphicsMagick-1.3.37-orig/magick/nt_base.h GraphicsMagick-1.3.37/magick/nt_base.h
+--- GraphicsMagick-1.3.37-orig/magick/nt_base.h	2021-12-12 23:07:42.000000000 +0200
++++ GraphicsMagick-1.3.37/magick/nt_base.h	2021-12-13 11:48:05.903230746 +0200
+@@ -460,7 +460,7 @@ extern MagickExport int
+ /*
+   libltdl-like module loader wrappers
+ */
+-#if !defined(HasLTDL)
++#if !defined(HasDL)
+ extern MagickExport void
+   *NTdlopen(const char *filename),
+   *NTdlsym(void *handle, const char *name);
+@@ -481,7 +481,7 @@ extern MagickExport const char
+ #define lt_dlopen(filename) NTdlopen(filename)
+ #define lt_dlsetsearchpath(path) NTdlsetsearchpath(path)
+ #define lt_dlsym(handle,name) NTdlsym(handle,name)
+-#endif /* !defined(HasLTDL) */
++#endif /* !defined(HasDL) */
+ 
+ extern MagickExport unsigned char
+   *NTResourceToBlob(const char *);
+diff -urNp GraphicsMagick-1.3.37-orig/magick/studio.h GraphicsMagick-1.3.37/magick/studio.h
+--- GraphicsMagick-1.3.37-orig/magick/studio.h	2020-12-26 18:34:21.000000000 +0200
++++ GraphicsMagick-1.3.37/magick/studio.h	2021-12-13 11:48:05.903230746 +0200
+@@ -470,7 +470,7 @@ extern int vsnprintf(char *s, size_t n,
+   script is used.
+ */
+ 
+-#if defined(HasLTDL)
++#if defined(HasDL)
+ #  define SupportMagickModules
+ #elif !defined(__MINGW32__) && !defined(__MINGW64__)
+ #  if defined(MSWINDOWS) && defined(_DLL)

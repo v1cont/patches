@@ -1,0 +1,23 @@
+--- gspell-1.8.3/gspell/gspell-checker-dialog.c.orig	2020-04-30 19:39:14.979259386 +0300
++++ gspell-1.8.3/gspell/gspell-checker-dialog.c	2020-04-30 19:51:07.449308719 +0300
+@@ -719,7 +719,7 @@
+ 
+ 	return g_object_new (GSPELL_TYPE_CHECKER_DIALOG,
+ 			     "transient-for", parent,
+-			     "use-header-bar", TRUE,
++			     "use-header-bar", FALSE,
+ 			     "spell-navigator", navigator,
+ 			     NULL);
+ }
+--- gspell-1.8.3/gspell/gspell-language-chooser-button.c.orig	2020-04-30 19:39:14.980259386 +0300
++++ gspell-1.8.3/gspell/gspell-language-chooser-button.c	2020-04-30 19:52:36.594314892 +0300
+@@ -246,8 +246,7 @@
+ 	priv->dialog = GSPELL_LANGUAGE_CHOOSER_DIALOG (
+ 		gspell_language_chooser_dialog_new (parent,
+ 						    priv->default_language ? NULL : priv->language,
+-						    GTK_DIALOG_DESTROY_WITH_PARENT |
+-						    GTK_DIALOG_USE_HEADER_BAR));
++						    GTK_DIALOG_DESTROY_WITH_PARENT));
+ 
+ 	if (parent != NULL)
+ 	{

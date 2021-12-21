@@ -1,0 +1,104 @@
+--- xtrlock-2.11/xtrlock.c.orig	2019-08-25 13:15:35.000000000 +0300
++++ xtrlock-2.11/xtrlock.c	2019-08-28 12:06:41.419998893 +0300
+@@ -22,6 +22,10 @@
+ #include <X11/keysym.h>
+ #include <X11/Xos.h>
+ 
++#ifdef USE_XCURSOR
++#include <X11/Xcursor/Xcursor.h>
++#endif
++
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <sys/types.h>
+@@ -87,6 +91,9 @@
+ #endif
+   struct timeval tv;
+   int tvt, gs;
++#ifdef USE_XCURSOR
++  char *cursor_name = NULL;
++#endif
+ 
+   while (argc > 1) {
+     if ((strcmp(argv[1], "-b") == 0)) {
+@@ -97,8 +104,18 @@
+       fork_after = 1;
+       argc--;
+       argv++;
++#ifdef USE_XCURSOR
++    } else if ((strcmp(argv[1], "-c") == 0)) {
++      cursor_name = strdup (argv[2]);
++      argc-=2;
++      argv+=2;
++#endif      
+     } else {
+-      fprintf(stderr,"xtrlock (version %s); usage: xtrlock [-b] [-f]\n",
++      fprintf(stderr,"xtrlock (version %s); usage: xtrlock [-b] [-f]"
++#ifdef USE_XCURSOR
++      " [-c <cursor_name>]"
++#endif
++      "\n",
+               program_version);
+       exit(1);
+     }
+@@ -174,10 +191,17 @@
+                     "white",
+                     &dummy, &csr_bg);
+ 
+-
+-
+-  cursor= XCreatePixmapCursor(display,csr_source,csr_mask,&csr_fg,&csr_bg,
+-                              lock_x_hot,lock_y_hot);
++#ifdef USE_XCURSOR
++  if (cursor_name) {
++    struct stat st_buf;    
++    if (lstat (cursor_name, &st_buf) == 0)
++      cursor = XcursorFilenameLoadCursor (display, cursor_name);
++    else
++      cursor = XcursorLibraryLoadCursor (display, cursor_name);
++  } else
++#endif
++    cursor= XCreatePixmapCursor(display,csr_source,csr_mask,&csr_fg,&csr_bg,
++                                lock_x_hot,lock_y_hot);
+ 
+   XMapWindow(display,window);
+ 
+--- xtrlock-2.11/Makefile.noimake.orig	2019-08-25 13:15:35.000000000 +0300
++++ xtrlock-2.11/Makefile.noimake	2019-08-28 14:09:25.681998014 +0300
+@@ -13,17 +13,30 @@
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ 
+-LDLIBS=-lX11
+-CC=gcc
+-CFLAGS=-Wall
+-INSTALL=install
++DESTDIR =
++
++prefix = /usr
++
++CC = gcc
++INSTALL = install
++
++CFLAGS += -Wall -DSHADOW_PWD
++LDLIBS += -lX11 -lcrypt
++
++ifeq ($(XCURSOR), 1)
++CFLAGS += -DUSE_XCURSOR
++LDLIBS += -lXcursor
++endif
+ 
+ xtrlock:	xtrlock.o
+ 
+ xtrlock.o:	xtrlock.c lock.bitmap mask.bitmap patchlevel.h
+ 
+ install:	xtrlock
+-		$(INSTALL) -c -m 755 xtrlock /usr/bin/X11
++		$(INSTALL) -D -m 755 xtrlock $(DESTDIR)$(prefix)/bin/xtrlock
+ 
+ install.man:
+-		$(INSTALL) -c -m 644 xtrlock.man /usr/man/man1/xtrlock.1x
++		$(INSTALL) -D -m 644 xtrlock.man $(DESTDIR)$(prefix)/share/man/man1/xtrlock.1
++
++clean:
++		rm -f xtrlock *.o *~
