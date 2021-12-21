@@ -1,3 +1,3 @@
 # Patches
 
-Usefull patches for some software i use
+Useful patches for some software I use
